@@ -915,3 +915,27 @@ button.reset:hover:not(:has(> *)) {
 .member-price__login {
   text-decoration: underline;
 }
+
+/* Member-price wrapper + the demo "preview as segment" control. */
+.member-price-wrap {
+  margin: 0.5rem 0 0;
+}
+.member-price-wrap .member-price {
+  margin: 0;
+}
+.member-price__preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+  font-size: 0.82rem;
+  color: #6b7280;
+}
+.member-price__preview select {
+  font-size: 0.82rem;
+  padding: 0.15rem 0.35rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  text-transform: capitalize;
+}
