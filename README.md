@@ -6,6 +6,7 @@ Hydrogen 2026.4 + React Router 7, and deployed to **Cloudflare Workers** (edge).
 
 > **▶ Live demo:** https://hydrogen-showcase.h-inouchi.workers.dev/instant-search
 > Uses Shopify's public **mock.shop** sample catalog — no login, just click.
+> **▶ 70-second walkthrough:** https://www.loom.com/share/8dbedc57802b420a804b0b6c4fa93013
 
 ---
 
