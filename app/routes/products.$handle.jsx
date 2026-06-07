@@ -96,39 +96,47 @@ async function loadMemberPricing({context, shop, product}) {
     // No rules → dormant. This runs BEFORE any login/Admin call (mock.shop path).
     if (rules.length === 0) return null;
 
+    // `rules` + `maxPct` always go to the client so it can render the teaser and
+    // the "preview as segment" demo control. `state` is the customer's real view.
+    const base = {rules, maxPct: maxPct(rules)};
+
     const loggedIn = await context.customerAccount.isLoggedIn();
-    if (!loggedIn) {
-      const top = maxPct(rules);
-      return top > 0 ? {state: 'teaser', maxPct: top} : null;
-    }
+    if (loggedIn) {
+      const {data} = await context.customerAccount.query(MEMBER_CUSTOMER_ID_QUERY);
+      const customerGid = data?.customer?.id;
 
-    const {data} = await context.customerAccount.query(MEMBER_CUSTOMER_ID_QUERY);
-    const customerGid = data?.customer?.id;
-    const tags = customerGid
-      ? await fetchCustomerTags(context.env, customerGid)
-      : null;
+      // Prefer the Customer Account API tags if this shop exposes them (no Admin
+      // token needed); otherwise look them up server-side via the Admin API.
+      let tags = await fetchCustomerAccountTags(context.customerAccount);
+      if (!tags && customerGid) {
+        tags = await fetchCustomerTags(context.env, customerGid);
+      }
 
-    const best = bestSegmentForTags(rules, tags ?? []);
-    if (!best) return null; // logged-in non-member sees nothing (like Liquid)
-
-    // Precompute member prices for the variants present in the payload; the
-    // component recomputes client-side for any variant not listed here.
-    const variantPrices = {};
-    for (const variant of collectVariants(product)) {
-      if (variant?.id && variant?.price) {
-        variantPrices[variant.id] = computeMemberMoney(
-          variant.price,
-          best.percentage,
-        );
+      const best = bestSegmentForTags(rules, tags ?? []);
+      if (best) {
+        // Precompute member prices for the variants in the payload; the component
+        // recomputes client-side for any variant not listed here.
+        const variantPrices = {};
+        for (const variant of collectVariants(product)) {
+          if (variant?.id && variant?.price) {
+            variantPrices[variant.id] = computeMemberMoney(
+              variant.price,
+              best.percentage,
+            );
+          }
+        }
+        return {
+          ...base,
+          state: 'member',
+          segment: best.segment,
+          pct: best.percentage,
+          variantPrices,
+        };
       }
     }
 
-    return {
-      state: 'member',
-      segment: best.segment,
-      pct: best.percentage,
-      variantPrices,
-    };
+    // Logged out, or logged in without a matching segment.
+    return {...base, state: 'teaser'};
   } catch {
     return null;
   }
@@ -154,9 +162,30 @@ function collectVariants(product) {
   return out;
 }
 
-// Plain string (not `#graphql`) so Storefront codegen doesn't try to validate
-// this Customer Account API query against the Storefront schema.
+/**
+ * Best-effort: some shops' Customer Account API exposes `customer.tags`. If so
+ * we avoid the Admin API entirely. If the field isn't available the query
+ * errors and we return null so the caller falls back to the Admin lookup.
+ * @param {any} customerAccount
+ * @returns {Promise<string[] | null>}
+ */
+async function fetchCustomerAccountTags(customerAccount) {
+  try {
+    const {data, errors} = await customerAccount.query(
+      MEMBER_CUSTOMER_TAGS_QUERY,
+    );
+    if (errors?.length) return null;
+    const tags = data?.customer?.tags;
+    return Array.isArray(tags) ? tags : null;
+  } catch {
+    return null;
+  }
+}
+
+// Plain strings (not `#graphql`) so Storefront codegen doesn't try to validate
+// these Customer Account API queries against the Storefront schema.
 const MEMBER_CUSTOMER_ID_QUERY = `query MemberCustomerId { customer { id } }`;
+const MEMBER_CUSTOMER_TAGS_QUERY = `query MemberCustomerTags { customer { tags } }`;
 
 /**
  * Load data for rendering content below the fold. This data is deferred and will be
