@@ -27,6 +27,11 @@ binding = "ASSETS"
 # Hydrogen requires SESSION_SECRET. With no PUBLIC_STORE_DOMAIN set, Hydrogen
 # defaults the Storefront client to mock.shop (public sample data, no token),
 # which is exactly what this showcase uses.
+#
+# The headless MEMBER PRICE feature stays dormant on mock.shop. To demo it,
+# deploy a SEPARATE preview pointed at a real store and provide the real-store
+# vars from .env.example, including the SERVER-ONLY secret PRIVATE_ADMIN_API_TOKEN
+# (set via `wrangler secret put PRIVATE_ADMIN_API_TOKEN` — never commit it here).
 [vars]
 SESSION_SECRET = "change-me-demo-session-secret"
 PUBLIC_STORE_DOMAIN = "mock.shop"

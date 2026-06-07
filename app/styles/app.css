@@ -868,3 +868,50 @@ button.reset:hover:not(:has(> *)) {
     position: static;
   }
 }
+
+/* -------------------------------------------------------------------------
+   Member price (route: products.$handle) — headless equivalent of the
+   Member Prices theme app extension. Renders only for logged-in members
+   (or a teaser for logged-out visitors) when the shop has pricing rules.
+   ------------------------------------------------------------------------- */
+.member-price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0.5rem 0 0;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #e5e5e5;
+  border-left: 4px solid #16a34a;
+  border-radius: 8px;
+  background: #f6fef9;
+}
+.member-price__label {
+  font-weight: 600;
+}
+.member-price__amount {
+  font-weight: 700;
+  color: #15803d;
+}
+.member-price__compare {
+  opacity: 0.55;
+}
+.member-price__badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  background: #16a34a;
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+}
+.member-price--teaser {
+  border-left-color: #6b7280;
+  background: #f7f7f8;
+}
+.member-price__teaser {
+  font-size: 0.92rem;
+  color: #374151;
+}
+.member-price__login {
+  text-decoration: underline;
+}
