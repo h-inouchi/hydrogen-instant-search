@@ -1,0 +1,32 @@
+# Cloudflare Workers deploy config for this Hydrogen storefront.
+#
+# Hydrogen's build (`npm run build`) emits a workerd module worker at
+# dist/server/index.js (default `fetch(request, env, ctx)` export) plus static
+# client assets in dist/client. That is natively Cloudflare-Workers-compatible,
+# so we deploy the worker directly and let Workers Static Assets serve /assets/*.
+#
+# Deploy:
+#   npm run build
+#   npx wrangler login      # one-time, opens your Cloudflare account in a browser
+#   npx wrangler deploy
+#
+# After first deploy, your public URL is:
+#   https://hydrogen-showcase.<your-subdomain>.workers.dev
+
+name = "hydrogen-showcase"
+main = "dist/server/index.js"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Serve the built client assets (e.g. /assets/app-*.css, favicon) as static
+# files; any path that is NOT a static asset falls through to the SSR worker.
+[assets]
+directory = "./dist/client"
+binding = "ASSETS"
+
+# Hydrogen requires SESSION_SECRET. With no PUBLIC_STORE_DOMAIN set, Hydrogen
+# defaults the Storefront client to mock.shop (public sample data, no token),
+# which is exactly what this showcase uses.
+[vars]
+SESSION_SECRET = "change-me-demo-session-secret"
+PUBLIC_STORE_DOMAIN = "mock.shop"
