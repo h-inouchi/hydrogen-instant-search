@@ -103,12 +103,16 @@ How it's wired (`app/routes/products.$handle.jsx`):
   Account API doesn't expose tags, and the Admin token never reaches the client.
 - Computes the member price with the **shared `app/lib/memberPrices.js`** module (ported
   from the app's logic + tested for parity), so the **storefront price equals the price
-  the checkout Function charges**. Logged-out visitors see a teaser.
+  the checkout Function charges**. Logged-out visitors see a teaser, and a
+  "preview as segment" control renders any segment's price from the real rules.
+
+> **▶ Live demo (real store):** https://hydrogen-member-demo.h-inouchi.workers.dev/products/the-videographer-snowboard
+> — a separate preview pointed at a store with the Member Prices app installed. Try the
+> teaser and the "Preview member price as: VIP / Wholesale" control.
 
 The feature is **additive and dormant**: with no `member_prices/rules` metafield (e.g. the
-mock.shop deployment) it renders nothing, so this public demo is unaffected. To see it
-live, point a separate preview deploy at a store that has the Member Prices app installed
-(see `.env.example` for the required vars + the server-only `PRIVATE_ADMIN_API_TOKEN`).
+mock.shop deployment) it renders nothing, so the main public demo is unaffected. See
+`.env.example` for the real-store vars + the server-only `PRIVATE_ADMIN_API_TOKEN`.
 
 **What it demonstrates:** wiring a Shopify app's functionality into a custom headless
 storefront across the Storefront, Customer Account, and Admin APIs — a common ask when
