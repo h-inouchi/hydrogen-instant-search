@@ -27,6 +27,7 @@ export function AddToCartButton({
           />
           <button
             type="submit"
+            className="btn btn--primary btn--block"
             onClick={onClick}
             disabled={disabled ?? fetcher.state !== 'idle'}
           >
