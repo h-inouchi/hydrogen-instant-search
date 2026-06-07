@@ -10,7 +10,15 @@ import {
 import {ProductPrice} from '~/components/ProductPrice';
 import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
+import {MemberPrice} from '~/components/MemberPrice';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
+import {
+  parseRules,
+  bestSegmentForTags,
+  maxPct,
+  computeMemberMoney,
+} from '~/lib/memberPrices';
+import {fetchCustomerTags} from '~/lib/adminApi.server';
 
 /**
  * @type {Route.MetaFunction}
@@ -51,7 +59,7 @@ async function loadCriticalData({context, params, request}) {
     throw new Error('Expected product handle to be defined');
   }
 
-  const [{product}] = await Promise.all([
+  const [{product, shop}] = await Promise.all([
     storefront.query(PRODUCT_QUERY, {
       variables: {handle, selectedOptions: getSelectedProductOptions(request)},
     }),
@@ -65,10 +73,90 @@ async function loadCriticalData({context, params, request}) {
   // The API handle might be localized, so redirect to the localized handle
   redirectIfHandleIsLocalized(request, {handle, data: product});
 
+  // Member pricing (headless equivalent of the Member Prices theme extension).
+  // Best-effort and never blocks the 200 — dormant when there's no config.
+  const memberPricing = await loadMemberPricing({context, shop, product});
+
   return {
     product,
+    memberPricing,
   };
 }
+
+/**
+ * Resolve the member price for this request, mirroring the Member Prices Liquid
+ * block (and the checkout Function). Returns null whenever member pricing
+ * shouldn't show — no metafield (e.g. mock.shop), not logged in without a
+ * teaser, a logged-in non-member, or any error — so the page never breaks.
+ * @param {{context: any, shop: any, product: any}}
+ */
+async function loadMemberPricing({context, shop, product}) {
+  try {
+    const rules = parseRules(shop?.metafield?.value);
+    // No rules → dormant. This runs BEFORE any login/Admin call (mock.shop path).
+    if (rules.length === 0) return null;
+
+    const loggedIn = await context.customerAccount.isLoggedIn();
+    if (!loggedIn) {
+      const top = maxPct(rules);
+      return top > 0 ? {state: 'teaser', maxPct: top} : null;
+    }
+
+    const {data} = await context.customerAccount.query(MEMBER_CUSTOMER_ID_QUERY);
+    const customerGid = data?.customer?.id;
+    const tags = customerGid
+      ? await fetchCustomerTags(context.env, customerGid)
+      : null;
+
+    const best = bestSegmentForTags(rules, tags ?? []);
+    if (!best) return null; // logged-in non-member sees nothing (like Liquid)
+
+    // Precompute member prices for the variants present in the payload; the
+    // component recomputes client-side for any variant not listed here.
+    const variantPrices = {};
+    for (const variant of collectVariants(product)) {
+      if (variant?.id && variant?.price) {
+        variantPrices[variant.id] = computeMemberMoney(
+          variant.price,
+          best.percentage,
+        );
+      }
+    }
+
+    return {
+      state: 'member',
+      segment: best.segment,
+      pct: best.percentage,
+      variantPrices,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Collect every variant present in the product payload (by id, deduped). */
+function collectVariants(product) {
+  const out = [];
+  const seen = new Set();
+  const push = (v) => {
+    if (v?.id && !seen.has(v.id)) {
+      seen.add(v.id);
+      out.push(v);
+    }
+  };
+  push(product?.selectedOrFirstAvailableVariant);
+  for (const v of product?.adjacentVariants ?? []) push(v);
+  for (const option of product?.options ?? []) {
+    for (const value of option?.optionValues ?? []) {
+      push(value?.firstSelectableVariant);
+    }
+  }
+  return out;
+}
+
+// Plain string (not `#graphql`) so Storefront codegen doesn't try to validate
+// this Customer Account API query against the Storefront schema.
+const MEMBER_CUSTOMER_ID_QUERY = `query MemberCustomerId { customer { id } }`;
 
 /**
  * Load data for rendering content below the fold. This data is deferred and will be
@@ -85,7 +173,7 @@ function loadDeferredData({context, params}) {
 
 export default function Product() {
   /** @type {LoaderReturnData} */
-  const {product} = useLoaderData();
+  const {product, memberPricing} = useLoaderData();
 
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
@@ -113,6 +201,10 @@ export default function Product() {
         <ProductPrice
           price={selectedVariant?.price}
           compareAtPrice={selectedVariant?.compareAtPrice}
+        />
+        <MemberPrice
+          memberPricing={memberPricing}
+          selectedVariant={selectedVariant}
         />
         <br />
         <ProductForm
@@ -234,6 +326,11 @@ const PRODUCT_QUERY = `#graphql
   ) @inContext(country: $country, language: $language) {
     product(handle: $handle) {
       ...Product
+    }
+    shop {
+      metafield(namespace: "member_prices", key: "rules") {
+        value
+      }
     }
   }
   ${PRODUCT_FRAGMENT}
