@@ -44,8 +44,14 @@ function normalizeProduct(node) {
     id: node.id,
     handle: node.handle,
     title: node.title,
-    image: node.featuredImage?.url ?? '',
-    alt: node.featuredImage?.altText ?? node.title,
+    image: node.featuredImage
+      ? {
+          url: node.featuredImage.url,
+          altText: node.featuredImage.altText ?? node.title,
+          width: node.featuredImage.width,
+          height: node.featuredImage.height,
+        }
+      : null,
     price: Number(node.priceRange?.minVariantPrice?.amount ?? 0),
     currency: node.priceRange?.minVariantPrice?.currencyCode ?? 'USD',
     available: Boolean(node.availableForSale),
@@ -75,6 +81,8 @@ const CATALOG_QUERY = `#graphql
         featuredImage {
           url
           altText
+          width
+          height
         }
         priceRange {
           minVariantPrice {

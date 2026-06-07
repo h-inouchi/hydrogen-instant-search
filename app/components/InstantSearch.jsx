@@ -1,6 +1,6 @@
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import {Link} from 'react-router';
-import {Money} from '@shopify/hydrogen';
+import {Image, Money} from '@shopify/hydrogen';
 
 /**
  * Client-side, zero-latency instant search + faceted filtering.
@@ -191,12 +191,20 @@ export function InstantSearch({items}) {
             </div>
           ) : (
             <ul className="is-grid">
-              {results.map((p) => (
+              {results.map((p, i) => (
                 <li key={p.id}>
                   <Link to={`/products/${p.handle}`} className="is-card">
                     <div className="is-card-img">
                       {p.image ? (
-                        <img src={p.image} alt={p.alt} loading="lazy" />
+                        <Image
+                          data={p.image}
+                          alt={p.image.altText}
+                          aspectRatio="1/1"
+                          sizes="(min-width: 44em) 240px, 45vw"
+                          // Eagerly load the first row so the LCP image isn't
+                          // deferred; lazy-load the rest.
+                          loading={i < 6 ? 'eager' : 'lazy'}
+                        />
                       ) : (
                         <div className="is-noimg" />
                       )}

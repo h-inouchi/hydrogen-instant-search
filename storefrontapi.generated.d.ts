@@ -746,7 +746,7 @@ export type InstantSearchCatalogQuery = {
         'id' | 'handle' | 'title' | 'tags' | 'availableForSale'
       > & {
         featuredImage?: StorefrontAPI.Maybe<
-          Pick<StorefrontAPI.Image, 'url' | 'altText'>
+          Pick<StorefrontAPI.Image, 'url' | 'altText' | 'width' | 'height'>
         >;
         priceRange: {
           minVariantPrice: Pick<
@@ -1340,7 +1340,7 @@ interface GeneratedQueryTypes {
     return: CatalogQuery;
     variables: CatalogQueryVariables;
   };
-  '#graphql\n  query InstantSearchCatalog($country: CountryCode, $language: LanguageCode, $first: Int)\n  @inContext(country: $country, language: $language) {\n    products(first: $first) {\n      nodes {\n        id\n        handle\n        title\n        tags\n        availableForSale\n        featuredImage {\n          url\n          altText\n        }\n        priceRange {\n          minVariantPrice {\n            amount\n            currencyCode\n          }\n        }\n        options {\n          name\n          optionValues {\n            name\n          }\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  query InstantSearchCatalog($country: CountryCode, $language: LanguageCode, $first: Int)\n  @inContext(country: $country, language: $language) {\n    products(first: $first) {\n      nodes {\n        id\n        handle\n        title\n        tags\n        availableForSale\n        featuredImage {\n          url\n          altText\n          width\n          height\n        }\n        priceRange {\n          minVariantPrice {\n            amount\n            currencyCode\n          }\n        }\n        options {\n          name\n          optionValues {\n            name\n          }\n        }\n      }\n    }\n  }\n': {
     return: InstantSearchCatalogQuery;
     variables: InstantSearchCatalogQueryVariables;
   };
