@@ -1,0 +1,36 @@
+# Member-price DEMO deploy — a SEPARATE Cloudflare Worker pointed at a real store,
+# so the main worker (mock.shop, instant-search 98/100) is never touched.
+#
+# Usage:
+#   cp wrangler.memberdemo.toml.example wrangler.memberdemo.toml   # the copy is gitignored
+#   # fill in the values below from your store's Headless channel
+#   npm run build
+#   npx wrangler@latest deploy -c wrangler.memberdemo.toml
+#   npx wrangler@latest secret put PRIVATE_ADMIN_API_TOKEN -c wrangler.memberdemo.toml
+#   # redeploy after setting the secret
+#
+# Predicted public URL: https://hydrogen-member-demo.<your-subdomain>.workers.dev
+# Register https://hydrogen-member-demo.<your-subdomain>.workers.dev/account/authorize
+# as a Customer Account API callback URI in the Headless channel.
+
+name = "hydrogen-member-demo"
+main = "dist/server/index.js"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./dist/client"
+binding = "ASSETS"
+
+[vars]
+SESSION_SECRET = "set-a-random-string"
+# Real store (NOT mock.shop):
+PUBLIC_STORE_DOMAIN = "quickstart-d7de668a.myshopify.com"
+PUBLIC_STOREFRONT_API_TOKEN = "from-headless-channel-storefront-api"
+PUBLIC_STOREFRONT_ID = "from-headless-channel"
+# Customer Account API (Headless channel → Customer Account API):
+PUBLIC_CUSTOMER_ACCOUNT_API_CLIENT_ID = "shp_..."
+SHOP_ID = "from-headless-channel"
+
+# PRIVATE_ADMIN_API_TOKEN is a SECRET — do NOT put it here. Set it with:
+#   npx wrangler secret put PRIVATE_ADMIN_API_TOKEN -c wrangler.memberdemo.toml
