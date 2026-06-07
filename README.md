@@ -20,6 +20,25 @@ per interaction, so results update in well under a millisecond. A live
 It's a focused portfolio piece for headless/Hydrogen, Storefront API, and
 performance-minded frontend work — the kind of build agencies subcontract.
 
+## Performance
+
+Lighthouse via [PageSpeed Insights](https://pagespeed.web.dev/), on the live
+`/instant-search` page:
+
+| Metric | 📱 Mobile | 🖥 Desktop |
+|---|---|---|
+| **Performance** | **98** | **100** |
+| First Contentful Paint | 1.5 s | 0.4 s |
+| Largest Contentful Paint | 2.2 s | 0.5 s |
+| Total Blocking Time | 0 ms | 0 ms |
+| Cumulative Layout Shift | 0 | 0 |
+| Speed Index | 1.5 s | 0.4 s |
+| Accessibility / Best Practices / SEO | 96 / 96 / 92 | 96 / 96 / 92 |
+
+Responsive images via Hydrogen's `<Image>` (Shopify CDN resizing + `srcset`) and
+edge SSR keep LCP and blocking time low; the in-memory search adds no per-keystroke
+network cost.
+
 ## The instant-search feature (`/instant-search`)
 
 - **Search-as-you-type** over the in-memory catalog, with the matched substring
