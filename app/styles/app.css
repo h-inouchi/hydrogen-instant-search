@@ -1172,3 +1172,52 @@ a {
 .product-options-item:hover {
   border-color: var(--text) !important;
 }
+
+/* Cart drawer buttons — replace the browser-default look with ghost pills,
+   and make the checkout link a primary button. */
+.cart-checkout {
+  text-decoration: none;
+  margin-top: 0.5rem;
+}
+.cart-line-quantity button,
+.cart-line button[type='submit'],
+.cart-summary-aside button,
+.cart-summary-page button {
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 1;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text);
+  border-radius: 999px;
+  padding: 0.4rem 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.cart-line-quantity button:hover,
+.cart-line button[type='submit']:hover,
+.cart-summary-aside button:hover,
+.cart-summary-page button:hover {
+  border-color: var(--text);
+  background: var(--surface);
+}
+.cart-line-quantity button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.cart-line-quantity {
+  align-items: center;
+  gap: 0.4rem;
+}
+.cart-line-quantity button {
+  min-width: 2rem;
+  text-align: center;
+}
+/* discount/gift-card inputs — match the pill aesthetic */
+.cart-summary-aside input[type='text'],
+.cart-summary-page input[type='text'] {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem;
+  font: inherit;
+}

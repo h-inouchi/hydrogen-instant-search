@@ -50,8 +50,12 @@ function CartCheckoutActions({checkoutUrl}) {
 
   return (
     <div>
-      <a href={checkoutUrl} target="_self">
-        <p>Continue to Checkout &rarr;</p>
+      <a
+        className="btn btn--primary btn--block cart-checkout"
+        href={checkoutUrl}
+        target="_self"
+      >
+        Continue to Checkout &rarr;
       </a>
       <br />
     </div>
