@@ -1022,8 +1022,7 @@ a {
 .header {
   padding: 0 1.5rem;
   border-bottom: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: saturate(140%) blur(8px);
+  background: #fff;
 }
 .header > a:first-child {
   font-weight: 750;
